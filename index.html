@@ -1,122 +1,231 @@
 <!DOCTYPE html>
-<html lang="en-us">
+<html>
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Unity WebGL Player | MatchManager</title>
-    <link rel="shortcut icon" href="TemplateData/favicon.ico">
-    <link rel="stylesheet" href="TemplateData/style.css">
+    <meta charset="utf-8" />
+    <link rel="icon" href="favicons.png" />
+    <title>HiloClient</title>
+
+    <!--http://www.html5rocks.com/en/mobile/mobifying/-->
+    <meta
+      name="viewport"
+      content="width=device-width,user-scalable=no,initial-scale=1,minimum-scale=1,maximum-scale=1,minimal-ui=true"
+    />
+
+    <!--https://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html-->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- force webkit on 360 -->
+    <meta name="renderer" content="webkit" />
+    <meta name="force-rendering" content="webkit" />
+    <!-- force edge on IE -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="msapplication-tap-highlight" content="no" />
+
+    <!-- force full screen on some browser -->
+    <meta name="full-screen" content="yes" />
+    <meta name="x5-fullscreen" content="true" />
+    <meta name="360-fullscreen" content="true" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <!--fix fireball/issues/3568 -->
+    <!--<meta name="browsermode" content="application">-->
+    <meta name="x5-page-mode" content="app" />
+
+    <!--<link rel="apple-touch-icon" href=".png" />-->
+    <!--<link rel="apple-touch-icon-precomposed" href=".png" />-->
+
+    <link rel="stylesheet" type="text/css" href="style.css" />
   </head>
   <body>
-    <div id="unity-container" class="unity-desktop">
-      <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
-      <div id="unity-loading-bar">
-        <div id="unity-logo"></div>
-        <div id="unity-progress-bar-empty">
-          <div id="unity-progress-bar-full"></div>
+    <div id="brandSplash" class="hide">
+      <img id="brandLogo" />
+    </div>
+    <img id="footer" class="hide" />
+    <div id="MainGame">
+      <div id="scrollArea1" class="hide scrollArea"></div>
+      <div id="GameDiv" style="min-height: fit-content">
+        <div id="Cocos3dGameContainer">
+          <canvas
+            id="GameCanvas"
+            oncontextmenu="event.preventDefault()"
+            tabindex="0"
+          ></canvas>
         </div>
       </div>
-      <div id="unity-warning"> </div>
-      <div id="unity-footer">
-        <div id="unity-webgl-logo"></div>
-        <div id="unity-fullscreen-button"></div>
-        <div id="unity-build-title">MatchManager</div>
-      </div>
+      <div id="scrollArea2" class="hide scrollArea"></div>
     </div>
-    <script>
+    
+<!-- Polyfills bundle. -->
+<script src="src/polyfills.bundle.js" charset="utf-8"> </script>
 
-      var container = document.querySelector("#unity-container");
-      var canvas = document.querySelector("#unity-canvas");
-      var loadingBar = document.querySelector("#unity-loading-bar");
-      var progressBarFull = document.querySelector("#unity-progress-bar-full");
-      var fullscreenButton = document.querySelector("#unity-fullscreen-button");
-      var warningBanner = document.querySelector("#unity-warning");
+<!-- SystemJS support. -->
+<script src="src/system.bundle.js" charset="utf-8"> </script>
 
-      // Shows a temporary message banner/ribbon for a few seconds, or
-      // a permanent error message on top of the canvas if type=='error'.
-      // If type=='warning', a yellow highlight color is used.
-      // Modify or remove this function to customize the visually presented
-      // way that non-critical warnings and error messages are presented to the
-      // user.
-      function unityShowBanner(msg, type) {
-        function updateBannerVisibility() {
-          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
-        }
-        var div = document.createElement('div');
-        div.innerHTML = msg;
-        warningBanner.appendChild(div);
-        if (type == 'error') div.style = 'background: red; padding: 10px;';
-        else {
-          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
-          setTimeout(function() {
-            warningBanner.removeChild(div);
-            updateBannerVisibility();
-          }, 5000);
-        }
-        updateBannerVisibility();
-      }
+<!-- Import map -->
+<script src="src/import-map.json" type="systemjs-importmap" charset="utf-8"> </script>
 
-      var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/BuildFile.loader.js";
-      var config = {
-        dataUrl: buildUrl + "/BuildFile.data",
-        frameworkUrl: buildUrl + "/BuildFile.framework.js",
-        codeUrl: buildUrl + "/BuildFile.wasm",
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "DefaultCompany",
-        productName: "MatchManager",
-        productVersion: "1.0",
-        showBanner: unityShowBanner,
-      };
+<script>
+    System.import('./index.js').catch(function(err) { console.error(err); })
+</script>
 
-      // By default, Unity keeps WebGL canvas render target size matched with
-      // the DOM size of the canvas element (scaled by window.devicePixelRatio)
-      // Set this to false if you want to decouple this synchronization from
-      // happening inside the engine, and you would instead like to size up
-      // the canvas DOM size and WebGL render target sizes yourself.
-      // config.matchWebGLToCanvasSize = false;
-
-      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        // Mobile device style: fill the whole browser client area with the game canvas:
-
-        var meta = document.createElement('meta');
-        meta.name = 'viewport';
-        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
-        document.getElementsByTagName('head')[0].appendChild(meta);
-        container.className = "unity-mobile";
-        canvas.className = "unity-mobile";
-
-        // To lower canvas resolution on mobile devices to gain some
-        // performance, uncomment the following line:
-        // config.devicePixelRatio = 1;
-
-
-      } else {
-        // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
-
-        canvas.style.width = "960px";
-        canvas.style.height = "600px";
-      }
-
-      loadingBar.style.display = "block";
-
-      var script = document.createElement("script");
-      script.src = loaderUrl;
-      script.onload = () => {
-        createUnityInstance(canvas, config, (progress) => {
-          progressBarFull.style.width = 100 * progress + "%";
-              }).then((unityInstance) => {
-                loadingBar.style.display = "none";
-                fullscreenButton.onclick = () => {
-                  unityInstance.SetFullscreen(1);
-                };
-              }).catch((message) => {
-                alert(message);
-              });
-            };
-
-      document.body.appendChild(script);
-
-    </script>
   </body>
+  <script>
+    var logoPromiseResolve = null;
+    var logoPromise = new Promise((resolve) => {
+      logoPromiseResolve = resolve;
+    });
+    const offsetHeight = 300;
+    const agent = window.navigator.userAgent.toLowerCase();
+    const isMobile = agent && /mobile|android|iphone|ipad/.test(agent);
+    const isIOS = agent && /iphone|ipad|ipod|ios|os/.test(agent);
+    const isIframe = !!window.parent && window !== window.parent;
+    const isIOSChrome = navigator.userAgent.indexOf("CriOS") >= 0;
+    const body = document.querySelector("body");
+    function beforeGameRun() {
+      const setting = cc.settings._settings.settings;
+      let hasBrandLogo = false;
+      if (setting.BrandLogoUrl !== "") {
+        const splash = document.getElementById("brandSplash");
+        if (splash) {
+          splash.classList.remove("hide");
+          document.getElementById("brandLogo").src = setting.BrandLogoUrl;
+          hasBrandLogo = true;
+          setTimeout(() => {
+            splash.remove();
+            logoPromiseResolve();
+          }, Math.max(0, setting.BrandLogoActiveDuration));
+        }
+      }
+      if (setting.FooterUrl !== "") {
+        const footer = document.getElementById("footer");
+        if (footer) {
+          footer.classList.remove("hide");
+          footer.src = setting.FooterUrl;
+        }
+      }
+      if (!hasBrandLogo) {
+        logoPromiseResolve();
+      }
+      if (isIOS && !isIframe && !isIOSChrome) {
+        const area1 = document.getElementById("scrollArea1");
+        const area2 = document.getElementById("scrollArea2");
+        area1.classList.remove("hide");
+        area2.classList.remove("hide");
+        document.querySelector("html").scroll(0, offsetHeight);
+      } else {
+        const gameDiv = document.getElementById("GameDiv");
+        gameDiv.style["position"] = "absolute";
+      }
+      function updateGameDivBottom() {
+        const gameDivstyle = document.querySelector("#GameDiv").style;
+        if (window.innerWidth > window.innerHeight && isMobile) {
+          const rotateToRight = window.orientation === -90;
+          gameDivstyle["bottom"] = `${
+            rotateToRight
+              ? window.innerHeight - window.innerWidth
+              : -window.innerWidth
+          }px`;
+        } else {
+          gameDivstyle["bottom"] = "0px";
+        }
+      }
+
+      function initEvent() {
+        if (isIOS && !isIframe) {
+          addEventListener("resize", () => {
+            window.scroll(0, offsetHeight);
+            body.scroll(0, offsetHeight);
+            setTimeout(() => {
+              window.scroll(0, offsetHeight);
+              body.scroll(0, offsetHeight);
+            }, 500);
+            for (let i = 0; i <= 10; i++) {
+              setTimeout(() => {
+                updateGameDivBottom();
+              }, i * 100);
+            }
+          });
+          window.addEventListener("orientationchange", () => {
+            window.scroll(0, offsetHeight);
+            body.scroll(0, offsetHeight);
+            setTimeout(() => {
+              window.scroll(0, offsetHeight);
+              body.scroll(0, offsetHeight);
+            }, 500);
+            for (let i = 0; i <= 10; i++) {
+              setTimeout(() => {
+                updateGameDivBottom();
+              }, i * 100);
+            }
+          });
+          window.scroll(0, offsetHeight);
+          body.scroll(0, offsetHeight);
+        }
+      }
+
+      initEvent();
+    }
+
+    function removeFooter() {
+      const footer = document.getElementById("footer");
+      footer?.remove();
+    }
+  </script>
+  <style>
+    .hide {
+      display: none;
+    }
+
+    #brandSplash {
+      width: 100vw;
+      height: 100%;
+      position: fixed;
+      background-color: #030303;
+      z-index: 2;
+    }
+
+    #brandLogo {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      margin: auto;
+      max-height: 100%;
+      max-width: 100%;
+      width: auto;
+      height: auto;
+    }
+
+    #footer {
+      z-index: 1;
+      position: fixed;
+      bottom: 0;
+      max-height: 50px;
+      max-width: 120px;
+    }
+
+    @media (orientation: portrait) {
+      #GameDiv {
+        bottom: 0;
+        position: fixed;
+      }
+
+      #GameCanvas {
+        position: fixed;
+        bottom: 0;
+      }
+    }
+    .hide {
+      display: none;
+    }
+    .scrollArea {
+      width: 100vw;
+      height: 300px;
+    }
+  </style>
 </html>
