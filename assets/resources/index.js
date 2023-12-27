@@ -18,4 +18,3 @@ System.register("chunks:///_virtual/resources",[],(function(){"use strict";retur
     };
     });
 });
-//# sourceMappingURL=index.js.map
